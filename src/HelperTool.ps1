@@ -13,33 +13,96 @@ $ObjForm.StartPosition = "CenterScreen"
 
 ##### Variablen
 $ObjLabelWaitStandardText = "Click a button"
-$NA = "Diese Funktion darf nicht ausgeführt werden oder ist zurzeit nicht verfügbar"
+$NA = "Diese Funktion darf nicht ausgeführt werden oder ist zurzeit nicht verfügbar."
 $StandardFont = New-Object System.Drawing.Font("San Francisco", 9)
 $StandardCursor = "Hand"
+$GetDialogInput1 = ""
+$GetDialogInput2 = ""
 
 
 ##### MenuBar
 $ObjMenuStrip = New-Object System.Windows.Forms.MenuStrip
-$ObjFileMenu = New-Object System.Windows.Forms.ToolStripMenuItem
-$ObjFileMenu.Text = "Datei"
 
+# Datei
+$ObjMenuItemFile = New-Object System.Windows.Forms.ToolStripMenuItem
+$ObjMenuItemFile.Text = "Datei"
+# Source Code
 $ObjMenuItemSourceCode = New-Object System.Windows.Forms.ToolStripMenuItem
 $ObjMenuItemSourceCode.Text = "Source Code"
 $ObjMenuItemSourceCode.Add_Click({
     Start-Process "https://github.com/getQueryString/Education/blob/master/src/HelperTool.ps1"
 })
-
+# Seperator
 $Seperator = New-Object System.Windows.Forms.ToolStripSeparator
-
+# Exit
 $ObjMenuItemExit = New-Object System.Windows.Forms.ToolStripMenuItem
 $ObjMenuItemExit.Text = "Exit"
 $ObjMenuItemExit.Add_Click({
     $ObjForm.Close()
 })
-$ObjFileMenu.DropDownItems.Add($ObjMenuItemSourceCode) > $null
-$ObjFileMenu.DropDownItems.Add($Seperator) > $null
-$ObjFileMenu.DropDownItems.Add($ObjMenuItemExit) > $null
-$ObjMenuStrip.Items.Add($ObjFileMenu) > $null
+$ObjMenuItemFile.DropDownItems.Add($ObjMenuItemSourceCode) > $null
+$ObjMenuItemFile.DropDownItems.Add($Seperator) > $null
+$ObjMenuItemFile.DropDownItems.Add($ObjMenuItemExit) > $null
+
+
+# Hilfe
+$ObjMenuItemHelp = New-Object System.Windows.Forms.ToolStripMenuItem
+$ObjMenuItemHelp.Text = "Hilfe"
+# About HelperTool
+$ObjMenuItemAbout = New-Object System.Windows.Forms.ToolStripMenuItem
+$ObjMenuItemAbout.Text = "Über HelperTool"
+$ObjMenuItemAbout.Add_Click({
+    # About Forms
+    $ObjFormAbout = New-Object System.Windows.Forms.Form
+    $ObjFormAbout.Size = New-Object System.Drawing.Size(480, 250)
+    $ObjFormAbout.FormBorderStyle = "FixedSingle"
+    $ObjFormAbout.MaximizeBox = $false
+    $ObjFormAbout.Text = "Über HelperTool"
+    $ObjFormAbout.BackColor = "white"
+    $ObjFormAbout.StartPosition = "CenterScreen"
+
+    # Version Label
+    $ObjAboutLabelVersion = New-Object System.Windows.Forms.Label
+    $ObjAboutLabelVersion.Size = New-Object System.Drawing.Size(100, 20)
+    $ObjAboutLabelVersion.Location = New-Object System.Drawing.Size(10, 10)
+    $ObjAboutLabelVersion.Font = $StandardFont
+    $ObjAboutLabelVersion.Text = "Version: 1.0"
+    $ObjFormAbout.Controls.Add($ObjAboutLabelVersion)
+
+    # Developer Label
+    $ObjAboutLabelDeveloper = New-Object System.Windows.Forms.Label
+    $ObjAboutLabelDeveloper.Size = New-Object System.Drawing.Size(150, 20)
+    $ObjAboutLabelDeveloper.Location = New-Object System.Drawing.Size(10, 30)
+    $ObjAboutLabelDeveloper.Font = $StandardFont
+    $ObjAboutLabelDeveloper.Text = "Entwickler: Fin"
+    $ObjFormAbout.Controls.Add($ObjAboutLabelDeveloper)
+
+    # License Label
+    $ObjAboutLabelLicense = New-Object System.Windows.Forms.Label
+    $ObjAboutLabelLicense.Size = New-Object System.Drawing.Size(480, 40)
+    $ObjAboutLabelLicense.Location = New-Object System.Drawing.Size(10, 170)
+    $ObjAboutLabelLicense.Font = $StandardFont
+    $ObjAboutLabelLicense.Text = "Lizenz:`nDieses Programm darf nur unter Angabe des Autors für eigene Zwecke verwendet, verändert und verbreitet werden."
+    $ObjFormAbout.Controls.Add($ObjAboutLabelLicense)
+
+
+    <#$Grid = New-Object System.Windows.Controls.Grid
+    $ObjFormAbout.Content = $Grid
+
+    $Border = New-Object System.Windows.Controls.Border
+    $Border.BorderBrush = [System.Windows.Media.Brushes]::Black
+    $Border.BorderThickness = [System.Windows.Thickness]::new(2)
+    $Border.CornerRadius = [System.Windows.CornerRadius]::new(15)
+
+    $Grid.Children.Add($Border)#>
+
+
+    $ObjFormAbout.ShowDialog()
+})
+$ObjMenuItemHelp.DropDownItems.Add($ObjMenuItemAbout) > $null
+
+$ObjMenuStrip.Items.Add($ObjMenuItemFile) > $null
+$ObjMenuStrip.Items.Add($ObjMenuItemHelp) > $null
 $ObjForm.Controls.Add($ObjMenuStrip) > $null
 
 
@@ -128,9 +191,7 @@ $ObjButtonSysprep.AutoSize = $true
 $ObjButtonSysprep.Cursor = $StandardCursor
 $ObjButtonSysprep.Add_Click({
     Write-Host $NA -ForegroundColor Red
-    [System.Windows.Forms.MessageBox]::Show("Diese Funktion darf nicht ausgeführt werden oder ist zurzeit nicht verfügbar.",
-            "Warnung", [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Warning)
+    Create-MessageBox -Title "Fehler" -Text $NA -Type Error -Button OK
 })
 $ObjForm.Controls.Add($ObjButtonSysprep)
 
@@ -182,28 +243,43 @@ $ObjButtonAutostart.Add_Click({
 $ObjForm.Controls.Add($ObjButtonAutostart)
 
 
-##### Weiterer Button 1
-$wbutton1 = New-Object System.Windows.Forms.Button
-$wbutton1.Location = New-Object System.Drawing.Size(620, 40)
-$wbutton1.Text = "Frei"
-$wbutton1.Font = $StandardFont
-$wbutton1.AutoSize = $true
-$wbutton1.Cursor = $StandardCursor
-$wbutton1.Add_Click({
-    Write-Host "b1"
+##### Robocopy
+$ObjButtonRobocopy = New-Object System.Windows.Forms.Button
+$ObjButtonRobocopy.Location = New-Object System.Drawing.Size(620, 40)
+$ObjButtonRobocopy.Text = "Robocopy"
+$ObjButtonRobocopy.Font = $StandardFont
+$ObjButtonRobocopy.AutoSize = $true
+$ObjButtonRobocopy.Cursor = $StandardCursor
+$ObjButtonRobocopy.Add_Click({
+    Write-Host $NA -ForegroundColor Red
+    # Create-MessageBox -Title "Fehler" -Text $NA -Type Error -Button OK
+    Create-Dialog -Title "Dateien kopieren erzwingen" -Text1 "Quellziel:" -Text2 "Zielpfad:"
+    Write-Host $GetDialogInput1        ########################## ne
+    Write-Host $InputFormTextBoxInput1 # ne
 })
-$ObjForm.Controls.Add($wbutton1)
+$ObjForm.Controls.Add($ObjButtonRobocopy)
+<#
+robocopy Quelleziel Zielpfad /E /ZB /R:3 /W:5 /LOG:C:\Pfad\zu\Logdatei.txt
+Quelleziel: Der Pfad zum Ordner, den Sie kopieren möchten.
+Zielpfad: Der Pfad zum Zielordner, in den Sie den Inhalt des fehlerhaften Ordners kopieren möchten.
+/E: Kopiert auch leere Unterverzeichnisse.
+/ZB: Nutzt den "Backup-Modus", um Dateien zu kopieren, selbst wenn sie im Zugriff sind.
+/R:3: Versucht 3 Mal, eine Datei zu kopieren, bevor der Vorgang abgebrochen wird.
+/W:5: Wartet 5 Sekunden zwischen den Versuchen.
+/LOG:C:\Pfad\zu\Logdatei.txt: Speichert die Protokolldaten des Kopiervorgangs in einer Textdatei.
+#>
 
 
 ##### Weiterer Button 2
 $wbutton2 = New-Object System.Windows.Forms.Button
 $wbutton2.Location = New-Object System.Drawing.Size(20, 80)
-$wbutton2.Text = "Frei"
+$wbutton2.Text = "net use"
 $wbutton2.Font = $StandardFont
 $wbutton2.AutoSize = $true
 $wbutton2.Cursor = $StandardCursor
 $wbutton2.Add_Click({
-    Write-Host "b2"
+    $Process = net use
+    Open-File $Process
 })
 $ObjForm.Controls.Add($wbutton2)
 
@@ -224,7 +300,7 @@ $ObjForm.Controls.Add($wbutton3)
 ##### Weiterer Button 4
 $wbutton4 = New-Object System.Windows.Forms.Button
 $wbutton4.Location = New-Object System.Drawing.Size(200, 80)
-$wbutton4.Text = "WinEvent"
+$wbutton4.Text = "Frei"
 $wbutton4.Font = $StandardFont
 $wbutton4.AutoSize = $true
 $wbutton4.Cursor = $StandardCursor
@@ -242,7 +318,7 @@ $ObjButtonWeather.Font = $StandardFont
 $ObjButtonWeather.AutoSize = $true
 $ObjButtonWeather.Cursor = $StandardCursor
 $ObjButtonWeather.Add_Click({
-    Create-Dialog -Title "Standort-Eingabe" -Text "Standort:" -Icon Information
+    Create-Dialog -Title "Standort-Eingabe" -Text1 "Standort:" -Icon Information
 })
 $ObjForm.Controls.Add($ObjButtonWeather)
 
@@ -268,7 +344,7 @@ function Open-File($Text) {
 
 
 ##### Create Input dialog
-function Create-Dialog($Title, $Text, $Icon) {
+function Create-Dialog($Title, $Text1, $Text2, $Icon) {
     # Create Form
     $InputForm = New-Object System.Windows.Forms.Form
     $InputForm.FormBorderStyle = "FixedSingle"
@@ -284,18 +360,32 @@ function Create-Dialog($Title, $Text, $Icon) {
         }
     })
 
-    # Text input
-    $InputFormTextBoxInput = New-Object System.Windows.Forms.TextBox
-    $InputFormTextBoxInput.Location = New-Object System.Drawing.Size(80, 60)
-    $InputFormTextBoxInput.Size = New-Object System.Drawing.Size(200, 20)
-    $InputForm.Controls.Add($InputFormTextBoxInput)
 
-    # Location Label
-    $InputFormLabelLocation = New-Object System.Windows.Forms.Label
-    $InputFormLabelLocation.Location = New-Object System.Drawing.Size(30, 63)
-    $InputFormLabelLocation.Size = New-Object System.Drawing.Size(50, 20)
-    $InputFormLabelLocation.Text = "$Text"
-    $InputForm.Controls.Add($InputFormLabelLocation)
+    # Location Label 1
+    $InputFormLabel1 = New-Object System.Windows.Forms.Label
+    $InputFormLabel1.Location = New-Object System.Drawing.Size(30, 63)
+    $InputFormLabel1.Size = New-Object System.Drawing.Size(70, 20)
+    $InputFormLabel1.Text = "$Text1"
+    $InputForm.Controls.Add($InputFormLabel1)
+
+    # Location Label 2
+    $InputFormLabel2 = New-Object System.Windows.Forms.Label
+    $InputFormLabel2.Location = New-Object System.Drawing.Size(30, 88)
+    $InputFormLabel2.Size = New-Object System.Drawing.Size(70, 20)
+    $InputFormLabel2.Text = "$Text2"
+    $InputForm.Controls.Add($InputFormLabel2)
+
+    # Text input 1
+    $InputFormTextBoxInput1 = New-Object System.Windows.Forms.TextBox
+    $InputFormTextBoxInput1.Location = New-Object System.Drawing.Size(100, 60)
+    $InputFormTextBoxInput1.Size = New-Object System.Drawing.Size(200, 20)
+    $InputForm.Controls.Add($InputFormTextBoxInput1)
+
+    # Text input 2
+    $InputFormTextBoxInput2 = New-Object System.Windows.Forms.TextBox
+    $InputFormTextBoxInput2.Location = New-Object System.Drawing.Size(100, 85)
+    $InputFormTextBoxInput2.Size = New-Object System.Drawing.Size(200, 20)
+    $InputForm.Controls.Add($InputFormTextBoxInput2)
 
     # OK Button
     $InputFormOKButton = New-Object System.Windows.Forms.Button
@@ -306,7 +396,8 @@ function Create-Dialog($Title, $Text, $Icon) {
     $InputFormOKButton.Cursor = $StandardCursor
     $InputFormOKButton.Add_Click({
         $InputForm.Close()
-        Start-Process "https://wttr.in/$( $InputFormTextBoxInput.Text )"
+        $GetDialogInput1 = $InputFormTextBoxInput1
+        $GetDialogInput2 = $InputFormTextBoxInput2
     })
     $InputForm.Controls.Add($InputFormOKButton)
 
