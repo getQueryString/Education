@@ -16,8 +16,6 @@ $ObjLabelWaitStandardText = "Click a button"
 $NA = "Diese Funktion darf nicht ausgeführt werden oder ist zurzeit nicht verfügbar."
 $StandardFont = New-Object System.Drawing.Font("San Francisco", 9)
 $StandardCursor = "Hand"
-$GetDialogInput1 = ""
-$GetDialogInput2 = ""
 
 
 ##### MenuBar
@@ -84,18 +82,6 @@ $ObjMenuItemAbout.Add_Click({
     $ObjAboutLabelLicense.Font = $StandardFont
     $ObjAboutLabelLicense.Text = "Lizenz:`nDieses Programm darf nur unter Angabe des Autors für eigene Zwecke verwendet, verändert und verbreitet werden."
     $ObjFormAbout.Controls.Add($ObjAboutLabelLicense)
-
-
-    <#$Grid = New-Object System.Windows.Controls.Grid
-    $ObjFormAbout.Content = $Grid
-
-    $Border = New-Object System.Windows.Controls.Border
-    $Border.BorderBrush = [System.Windows.Media.Brushes]::Black
-    $Border.BorderThickness = [System.Windows.Thickness]::new(2)
-    $Border.CornerRadius = [System.Windows.CornerRadius]::new(15)
-
-    $Grid.Children.Add($Border)#>
-
 
     $ObjFormAbout.ShowDialog()
 })
@@ -190,8 +176,16 @@ $ObjButtonSysprep.Font = $StandardFont
 $ObjButtonSysprep.AutoSize = $true
 $ObjButtonSysprep.Cursor = $StandardCursor
 $ObjButtonSysprep.Add_Click({
-    Write-Host $NA -ForegroundColor Red
-    Create-MessageBox -Title "Fehler" -Text $NA -Type Error -Button OK
+    $Respone = New-MessageBox -Title "Achtung" -Text "Bitte fahren Sie nur fort, wenn Sie wissen, was Sie tun!" -Type Warning -Button OKCancel
+    if ($Respone -eq "OK") {
+        $Path = Resolve-Path "C:\Windows\System32\Sysprep"
+        if (-not(Test-Path "$Path" -PathType Container)) {
+            New-MessageBox -Title "Error" -Text "Der Sysprep-Ordner existiert nicht." -Type Error -Button OK
+        }
+        else {
+            Start-Process $Path
+        }
+    }
 })
 $ObjForm.Controls.Add($ObjButtonSysprep)
 
@@ -233,8 +227,8 @@ $ObjButtonAutostart.AutoSize = $true
 $ObjButtonAutostart.Cursor = $StandardCursor
 $ObjButtonAutostart.Add_Click({
     $Path = Resolve-Path "$HOME/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup"
-    if (-not(Test-Path "$Path" -pathType container)) {
-        Create-MessageBox -Title "Error" -Text "Der Autostart-Ordner existert nicht." -Type Error -Button OK
+    if (-not(Test-Path "$Path" -PathType Container)) {
+        New-MessageBox -Title "Error" -Text "Der Autostart-Ordner existert nicht." -Type Error -Button OK
     }
     else {
         Start-Process $Path
@@ -251,11 +245,10 @@ $ObjButtonRobocopy.Font = $StandardFont
 $ObjButtonRobocopy.AutoSize = $true
 $ObjButtonRobocopy.Cursor = $StandardCursor
 $ObjButtonRobocopy.Add_Click({
-    Write-Host $NA -ForegroundColor Red
-    # Create-MessageBox -Title "Fehler" -Text $NA -Type Error -Button OK
-    Create-Dialog -Title "Dateien kopieren erzwingen" -Text1 "Quellziel:" -Text2 "Zielpfad:"
-    Write-Host $GetDialogInput1        ########################## ne
-    Write-Host $InputFormTextBoxInput1 # ne
+    New-Dialog -Title "Dateien kopieren erzwingen" -Text1 "Quellziel:" -Text2 "Zielpfad:" -SecondInput $true
+    if ($InputFormTextBoxInput1.Text -ne "" -and $InputFormTextBoxInput2.Text -ne "" -and $ClickedOK) {
+        robocopy $InputFormTextBoxInput1.Text $InputFormTextBoxInput2.Text /E /ZB /R:3 /W:5 /LOG:$HOME\Logdatei.txt
+    }
 })
 $ObjForm.Controls.Add($ObjButtonRobocopy)
 <#
@@ -270,44 +263,113 @@ Zielpfad: Der Pfad zum Zielordner, in den Sie den Inhalt des fehlerhaften Ordner
 #>
 
 
-##### Weiterer Button 2
-$wbutton2 = New-Object System.Windows.Forms.Button
-$wbutton2.Location = New-Object System.Drawing.Size(20, 80)
-$wbutton2.Text = "net use"
-$wbutton2.Font = $StandardFont
-$wbutton2.AutoSize = $true
-$wbutton2.Cursor = $StandardCursor
-$wbutton2.Add_Click({
+##### net use Button
+$ObjButtonNetUse = New-Object System.Windows.Forms.Button
+$ObjButtonNetUse.Location = New-Object System.Drawing.Size(20, 80)
+$ObjButtonNetUse.Text = "net use"
+$ObjButtonNetUse.Font = $StandardFont
+$ObjButtonNetUse.AutoSize = $true
+$ObjButtonNetUse.Cursor = $StandardCursor
+$ObjButtonNetUse.Add_Click({
     $Process = net use
     Open-File $Process
 })
-$ObjForm.Controls.Add($wbutton2)
+$ObjForm.Controls.Add($ObjButtonNetUse)
 
 
-##### Weiterer Button 3
-$wbutton3 = New-Object System.Windows.Forms.Button
-$wbutton3.Location = New-Object System.Drawing.Size(110, 80)
-$wbutton3.Text = "Frei"
-$wbutton3.Font = $StandardFont
-$wbutton3.AutoSize = $true
-$wbutton3.Cursor = $StandardCursor
-$wbutton3.Add_Click({
-    Write-Host "b3"
+##### nslookup Button
+$ObjButtonNsLookup = New-Object System.Windows.Forms.Button
+$ObjButtonNsLookup.Location = New-Object System.Drawing.Size(110, 80)
+$ObjButtonNsLookup.Text = "nslookup"
+$ObjButtonNsLookup.Font = $StandardFont
+$ObjButtonNsLookup.AutoSize = $true
+$ObjButtonNsLookup.Cursor = $StandardCursor
+$ObjButtonNsLookup.Add_Click({
+    New-Dialog -Title "Ziel-Eingabe" -Text1 "Ziel:" -Icon Information -SecondInput $false
+    if ($InputFormTextBoxInput1.Text -ne "" -and $ClickedOK) {
+        $Process = nslookup $InputFormTextBoxInput1.Text
+        Open-File $Process
+    }
 })
-$ObjForm.Controls.Add($wbutton3)
+$ObjForm.Controls.Add($ObjButtonNsLookup)
 
 
-##### Weiterer Button 4
-$wbutton4 = New-Object System.Windows.Forms.Button
-$wbutton4.Location = New-Object System.Drawing.Size(200, 80)
-$wbutton4.Text = "Frei"
-$wbutton4.Font = $StandardFont
-$wbutton4.AutoSize = $true
-$wbutton4.Cursor = $StandardCursor
-$wbutton4.Add_Click({
-    Write-Host "b4"
+##### Export Microsoft mailbox Button
+$ObjButtonExportMicrosoftMailbox = New-Object System.Windows.Forms.Button
+$ObjButtonExportMicrosoftMailbox.Location = New-Object System.Drawing.Size(200, 80)
+$ObjButtonExportMicrosoftMailbox.Text = "Export mailbox"
+$ObjButtonExportMicrosoftMailbox.Font = $StandardFont
+$ObjButtonExportMicrosoftMailbox.AutoSize = $true
+$ObjButtonExportMicrosoftMailbox.Cursor = $StandardCursor
+$ObjButtonExportMicrosoftMailbox.Add_Click({
+    Write-Host "$NA" -ForegroundColor Red
+    New-Dialog -Title "Eingabe" -Text1 "E-Mail:" -Text2 "Speicherort:" -SecondInput $true
+    <#if ($InputFormTextBoxInput1.Text -ne "" -and $InputFormTextBoxInput2.Text -ne "" -and $ClickedOK) {
+        if(-not(Get-Module -Name ExchangeOnlineManagement -ListAvailable)) {
+            Install-Module ExchangeOnlineManagement
+            Write-Host "Nicht installiert."
+        }
+        Import-Module ExchangeOnlineManagement
+        Write-Host "ExchangeOnlineManagement importiert."
+        # Connect-ExchangeOnline -UserPrincipalName $InputFormTextBoxInput1.Text
+        # get-mailbox | get-mailboxstatistics | select DisplayName,ItemCount,TotalItemSize,IsArchiveMailbox | export-csv "$($InputFormTextBoxInput2.Text)\MailboxSizes.csv"    
+    }#>
 })
-$ObjForm.Controls.Add($wbutton4)
+$ObjForm.Controls.Add($ObjButtonExportMicrosoftMailbox)
+
+
+
+
+##### Button 1
+$btn1 = New-Object System.Windows.Forms.Button
+$btn1.Location = New-Object System.Drawing.Size(310, 80)
+$btn1.Text = "btn1"
+$btn1.Font = $StandardFont
+$btn1.AutoSize = $true
+$btn1.Cursor = $StandardCursor
+$btn1.Add_Click({
+    Write-Host "$NA" -ForegroundColor Red
+})
+$ObjForm.Controls.Add($btn1)
+
+
+##### Button 2
+$btn2 = New-Object System.Windows.Forms.Button
+$btn2.Location = New-Object System.Drawing.Size(400, 80)
+$btn2.Text = "btn2"
+$btn2.Font = $StandardFont
+$btn2.AutoSize = $true
+$btn2.Cursor = $StandardCursor
+$btn2.Add_Click({
+    Write-Host "$NA" -ForegroundColor Red
+})
+$ObjForm.Controls.Add($btn2)
+
+
+##### Button 3
+$btn3 = New-Object System.Windows.Forms.Button
+$btn3.Location = New-Object System.Drawing.Size(490, 80)
+$btn3.Text = "btn3"
+$btn3.Font = $StandardFont
+$btn3.AutoSize = $true
+$btn3.Cursor = $StandardCursor
+$btn3.Add_Click({
+    Write-Host "$NA" -ForegroundColor Red
+})
+$ObjForm.Controls.Add($btn3)
+
+
+##### Button 4
+$btn4 = New-Object System.Windows.Forms.Button
+$btn4.Location = New-Object System.Drawing.Size(580, 80)
+$btn4.Text = "btn4"
+$btn4.Font = $StandardFont
+$btn4.AutoSize = $true
+$btn4.Cursor = $StandardCursor
+$btn4.Add_Click({
+    Write-Host "$NA" -ForegroundColor Red
+})
+$ObjForm.Controls.Add($btn4)
 
 
 ##### Weather Button
@@ -318,7 +380,10 @@ $ObjButtonWeather.Font = $StandardFont
 $ObjButtonWeather.AutoSize = $true
 $ObjButtonWeather.Cursor = $StandardCursor
 $ObjButtonWeather.Add_Click({
-    Create-Dialog -Title "Standort-Eingabe" -Text1 "Standort:" -Icon Information
+    New-Dialog -Title "Standort-Eingabe" -Text1 "Standort:" -Icon Information -SecondInput $false
+    if ($ClickedOK) {
+        Start-Process "https://wttr.in/$( $InputFormTextBoxInput1.Text )"
+    }
 })
 $ObjForm.Controls.Add($ObjButtonWeather)
 
@@ -344,7 +409,7 @@ function Open-File($Text) {
 
 
 ##### Create Input dialog
-function Create-Dialog($Title, $Text1, $Text2, $Icon) {
+function New-Dialog($Title, $Text1, $Text2, $SecondInput, $Icon) {
     # Create Form
     $InputForm = New-Object System.Windows.Forms.Form
     $InputForm.FormBorderStyle = "FixedSingle"
@@ -363,29 +428,31 @@ function Create-Dialog($Title, $Text1, $Text2, $Icon) {
 
     # Location Label 1
     $InputFormLabel1 = New-Object System.Windows.Forms.Label
-    $InputFormLabel1.Location = New-Object System.Drawing.Size(30, 63)
+    $InputFormLabel1.Location = New-Object System.Drawing.Size(30, 53)
     $InputFormLabel1.Size = New-Object System.Drawing.Size(70, 20)
     $InputFormLabel1.Text = "$Text1"
     $InputForm.Controls.Add($InputFormLabel1)
 
-    # Location Label 2
-    $InputFormLabel2 = New-Object System.Windows.Forms.Label
-    $InputFormLabel2.Location = New-Object System.Drawing.Size(30, 88)
-    $InputFormLabel2.Size = New-Object System.Drawing.Size(70, 20)
-    $InputFormLabel2.Text = "$Text2"
-    $InputForm.Controls.Add($InputFormLabel2)
-
     # Text input 1
-    $InputFormTextBoxInput1 = New-Object System.Windows.Forms.TextBox
-    $InputFormTextBoxInput1.Location = New-Object System.Drawing.Size(100, 60)
+    $Global:InputFormTextBoxInput1 = New-Object System.Windows.Forms.TextBox
+    $InputFormTextBoxInput1.Location = New-Object System.Drawing.Size(100, 50)
     $InputFormTextBoxInput1.Size = New-Object System.Drawing.Size(200, 20)
     $InputForm.Controls.Add($InputFormTextBoxInput1)
 
-    # Text input 2
-    $InputFormTextBoxInput2 = New-Object System.Windows.Forms.TextBox
-    $InputFormTextBoxInput2.Location = New-Object System.Drawing.Size(100, 85)
-    $InputFormTextBoxInput2.Size = New-Object System.Drawing.Size(200, 20)
-    $InputForm.Controls.Add($InputFormTextBoxInput2)
+    if ($SecondInput -eq $true) {
+        # Location Label 2
+        $InputFormLabel2 = New-Object System.Windows.Forms.Label
+        $InputFormLabel2.Location = New-Object System.Drawing.Size(30, 78)
+        $InputFormLabel2.Size = New-Object System.Drawing.Size(70, 20)
+        $InputFormLabel2.Text = "$Text2"
+        $InputForm.Controls.Add($InputFormLabel2)
+
+        # Text input 2
+        $Global:InputFormTextBoxInput2 = New-Object System.Windows.Forms.TextBox
+        $InputFormTextBoxInput2.Location = New-Object System.Drawing.Size(100, 75)
+        $InputFormTextBoxInput2.Size = New-Object System.Drawing.Size(200, 20)
+        $InputForm.Controls.Add($InputFormTextBoxInput2)
+    }
 
     # OK Button
     $InputFormOKButton = New-Object System.Windows.Forms.Button
@@ -396,8 +463,7 @@ function Create-Dialog($Title, $Text1, $Text2, $Icon) {
     $InputFormOKButton.Cursor = $StandardCursor
     $InputFormOKButton.Add_Click({
         $InputForm.Close()
-        $GetDialogInput1 = $InputFormTextBoxInput1
-        $GetDialogInput2 = $InputFormTextBoxInput2
+        $Global:ClickedOK = $true
     })
     $InputForm.Controls.Add($InputFormOKButton)
 
@@ -410,6 +476,7 @@ function Create-Dialog($Title, $Text1, $Text2, $Icon) {
     $InputFormCancelButton.Cursor = $StandardCursor
     $InputFormCancelButton.Add_Click({
         $InputForm.Close()
+        $Global:ClickedOK = $false
     })
     $InputForm.Controls.Add($InputFormCancelButton)
 
@@ -419,7 +486,7 @@ function Create-Dialog($Title, $Text1, $Text2, $Icon) {
 
 
 ##### Create MessageBox
-function Create-MessageBox($Title, $Text, $Type, $Button) {
+function New-MessageBox($Title, $Text, $Type, $Button) {
     [System.Windows.Forms.MessageBox]::Show($Text, $Title, [System.Windows.Forms.MessageBoxButtons]::$Button,
             [System.Windows.Forms.MessageBoxIcon]::$Type)
 }
@@ -427,7 +494,7 @@ function Create-MessageBox($Title, $Text, $Type, $Button) {
 
 ##### Close UI dialog
 <#$ObjForm.Add_FormClosing({
-    $Response =  Create-MessageBox -Title "HelperTool beenden" -Text "Möchten Sie HelperTool wirklich beenden?" -Type Question -Button YesNo
+    $Response =  New-MessageBox -Title "HelperTool beenden" -Text "Möchten Sie HelperTool wirklich beenden?" -Type Question -Button YesNo
     if ($Response -eq "No") {
         $_.Cancel = $true
     }
