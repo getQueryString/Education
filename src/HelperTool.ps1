@@ -1,6 +1,4 @@
-﻿Write-Host "Startet ..."
-
-##### UI einstellen
+﻿##### UI einstellen
 $ObjForm = New-Object System.Windows.Forms.Form
 $ObjForm.Size = New-Object System.Drawing.Size(720, 480)
 $ObjForm.FormBorderStyle = "FixedSingle"
@@ -303,7 +301,7 @@ $ObjButtonExportMicrosoftMailbox.AutoSize = $true
 $ObjButtonExportMicrosoftMailbox.Cursor = $StandardCursor
 $ObjButtonExportMicrosoftMailbox.Add_Click({
     Write-Host "$NA" -ForegroundColor Red
-    New-Dialog -Title "Eingabe" -Text1 "E-Mail:" -Text2 "Speicherort:" -SecondInput $true
+    New-Dialog -Title "Eingabe – Nicht verfügbar!" -Text1 "E-Mail:" -Text2 "Speicherort:" -SecondInput $true
     <#if ($InputFormTextBoxInput1.Text -ne "" -and $InputFormTextBoxInput2.Text -ne "" -and $ClickedOK) {
         if(-not(Get-Module -Name ExchangeOnlineManagement -ListAvailable)) {
             Install-Module ExchangeOnlineManagement
@@ -380,7 +378,7 @@ $ObjButtonWeather.Font = $StandardFont
 $ObjButtonWeather.AutoSize = $true
 $ObjButtonWeather.Cursor = $StandardCursor
 $ObjButtonWeather.Add_Click({
-    New-Dialog -Title "Standort-Eingabe" -Text1 "Standort:" -Icon Information -SecondInput $false
+    New-Dialog -Title "Standort-Eingabe" -Text1 "Standort:" -SecondInput $false
     if ($ClickedOK) {
         Start-Process "https://wttr.in/$( $InputFormTextBoxInput1.Text )"
     }
