@@ -321,12 +321,13 @@ $ObjForm.Controls.Add($ObjButtonExportMicrosoftMailbox)
 ##### Button 1
 $btn1 = New-Object System.Windows.Forms.Button
 $btn1.Location = New-Object System.Drawing.Size(310, 80)
-$btn1.Text = "btn1"
+$btn1.Text = "Upgrade all"
 $btn1.Font = $StandardFont
 $btn1.AutoSize = $true
 $btn1.Cursor = $StandardCursor
 $btn1.Add_Click({
-    Write-Host "$NA" -ForegroundColor Red
+    $Process = WinGet upgrade -h --all
+    Open-File $Process
 })
 $ObjForm.Controls.Add($btn1)
 
